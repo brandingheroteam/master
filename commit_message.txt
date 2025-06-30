@@ -1,1 +1,1 @@
-feat: Update copyright year to 2025
+fix: Improve responsiveness and clean up code in HTML files
