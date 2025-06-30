@@ -75,6 +75,26 @@
             text-decoration: underline;
         }
 
+        .video-responsive {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            margin-bottom: 1rem;
+        }
+
+        .video-responsive iframe,
+        .video-responsive object,
+        .video-responsive embed {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
         @media (max-width: 768px) {
             .header-panel {
                 flex-direction: column;
@@ -107,8 +127,7 @@
     <main class="container">
         <section class="article-col-highlights-side">
             <h1>The Ultimate Guide to Facial Fillers: Finding Quality Treatment at Affordable Prices</h1>
-            <div class="list-h">
-                <div class="list-detail">
+            
 
 
 <h2>A Personal Journey into the World of Aesthetic Enhancements</h2>
@@ -167,7 +186,7 @@
 
 <p>One video that I found particularly enlightening was their <b><a href="https://www.youtube.com/watch?v=ZRpHw8ruPwU">detailed explanation of different filler types</a></b>. This kind of transparency is rare in the industry and speaks volumes about M Vita Clinic's commitment to patient education.</p>
 
-<center><iframe width="560" height="315" src="https://www.youtube.com/embed/ZRpHw8ruPwU" frameborder="0" allowfullscreen></iframe></center>
+<div class="video-responsive"><iframe width="560" height="315" src="https://www.youtube.com/embed/ZRpHw8ruPwU" frameborder="0" allowfullscreen></iframe></div>
 
 <p>Another aspect that impressed me was their focus on <b><a href="https://www.youtube.com/watch?v=DDATOu_zXA8">natural-looking results</a></b>. In an industry where overdone treatments are unfortunately common, M Vita Clinic's approach is refreshingly subtle. They understand that the goal is to enhance your natural beauty, not create an artificial look.</p>
 
@@ -232,9 +251,7 @@
 </p>
 
 <p>Remember, your journey to enhanced beauty begins with a single step. Why not make that step with a clinic that values your individual beauty as much as you do? M Vita Clinic is ready to guide you on your path to radiant confidence.</p>
-                  
-                </div>
-            </div>
+
         </section>
     </main>
 
