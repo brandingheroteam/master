@@ -1,1 +1,1 @@
-feat: Replace SVG image with new generated image
+feat: Add new article on Online Marketing Strategy
