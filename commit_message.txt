@@ -1,1 +1,1 @@
-feat: Add new article on Online Marketing Strategy
+feat: add new article and update index.html
