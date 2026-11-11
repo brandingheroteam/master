@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- หน้านี้สำหรับเจ้าของเว็บเท่านั้น ไม่ให้ Google เก็บไปแสดงในผลค้นหา -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com; form-action 'none'; base-uri 'none'">
+    <link rel="shortcut icon" href="images/favicon.ico" />
+    <title>เขียนบทความอัตโนมัติ : RapidPress.INFO</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background: #fff;
+            color: #222;
+        }
+        .container {
+            width: 90%;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #132f65;
+            padding: 1rem 0;
+        }
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .bp-logo img {
+            max-width: 200px;
+            width: 100%;
+            display: block;
+        }
+        .header-tag {
+            color: #add8e6;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .card {
+            background-color: #f0f0f0;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            border-radius: 6px;
+        }
+        h1 {
+            color: #132f65;
+            font-size: 1.5rem;
+            line-height: 1.3;
+            margin: 0 0 0.25rem;
+        }
+        h2 {
+            color: #132f65;
+            font-size: 1.15rem;
+            margin: 0 0 0.75rem;
+        }
+        .hint {
+            color: #555;
+            font-size: 0.9rem;
+            margin: 0 0 1rem;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            color: #132f65;
+            margin: 0.9rem 0 0.35rem;
+        }
+        input[type="text"], input[type="password"], textarea {
+            width: 100%;
+            font-family: inherit;
+            font-size: 16px; /* กันมือถือซูมเองตอนแตะ */
+            padding: 0.7rem 0.8rem;
+            border: 1px solid #c5ccd8;
+            border-radius: 6px;
+            background: #fff;
+            color: #222;
+        }
+        input:focus, textarea:focus {
+            outline: 2px solid #132f65;
+            outline-offset: 0;
+            border-color: #132f65;
+        }
+        textarea { min-height: 110px; resize: vertical; }
+        .btn {
+            display: block;
+            width: 100%;
+            margin-top: 1.1rem;
+            padding: 0.9rem 1rem;
+            font-family: inherit;
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: #fff;
+            background: #132f65;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn:hover { background: #1c4189; }
+        .btn:disabled { background: #8c99b3; cursor: not-allowed; }
+        .btn-light {
+            background: #fff;
+            color: #132f65;
+            border: 1px solid #132f65;
+        }
+        .btn-light:hover { background: #e6ebf5; }
+        .row { display: flex; gap: 0.6rem; }
+        .row .btn { margin-top: 0.8rem; font-size: 0.95rem; padding: 0.7rem; }
+        .check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: normal;
+            color: #333;
+            margin-top: 0.8rem;
+        }
+        .check input { width: 1.1rem; height: 1.1rem; }
+        details summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #132f65;
+            font-size: 1.05rem;
+            list-style: none;
+        }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::before { content: "▸ "; }
+        details[open] summary::before { content: "▾ "; }
+        .badge {
+            display: inline-block;
+            font-size: 0.8rem;
+            padding: 0.1rem 0.55rem;
+            border-radius: 99px;
+            background: #dde3ee;
+            color: #132f65;
+            white-space: nowrap;
+        }
+        .badge.ok { background: #d8f0dc; color: #1b6b2a; }
+        .badge.err { background: #f8dcdc; color: #9b1c1c; }
+        .badge.run { background: #fff1c9; color: #7a5a00; }
+        #status { display: none; }
+        #status.show { display: block; }
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: bold;
+            color: #132f65;
+        }
+        .spinner {
+            width: 1.1rem;
+            height: 1.1rem;
+            border: 3px solid #c5ccd8;
+            border-top-color: #132f65;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            flex: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .steps { margin: 0.75rem 0 0; padding-left: 1.25rem; color: #444; font-size: 0.95rem; }
+        .steps li.done { color: #1b6b2a; }
+        .steps li.now { color: #132f65; font-weight: bold; }
+        .result-link {
+            display: block;
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            background: #fff;
+            border: 2px solid #132f65;
+            border-radius: 6px;
+            color: #132f65;
+            font-weight: bold;
+            text-decoration: none;
+            word-break: break-word;
+        }
+        .small { font-size: 0.85rem; color: #555; }
+        .small a { color: #132f65; }
+        .msg-err { color: #9b1c1c; font-weight: bold; }
+        #history { list-style: none; padding: 0; margin: 0; }
+        #history li {
+            background: #fff;
+            border-radius: 6px;
+            padding: 0.75rem 0.85rem;
+            margin-bottom: 0.6rem;
+        }
+        #history .h-top { display: flex; justify-content: space-between; gap: 0.5rem; align-items: flex-start; }
+        #history .h-title { font-weight: bold; color: #222; word-break: break-word; }
+        #history a { color: #132f65; }
+        .empty { color: #777; font-size: 0.95rem; }
+        footer {
+            background-color: #132f65;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+        footer a { color: #add8e6; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .bp-logo img { max-width: 150px; }
+            h1 { font-size: 1.3rem; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-panel">
+                <div class="bp-logo">
+                    <a href="./">
+                        <img src="./images/RapidPress_logo.png" alt="RapidPress.INFO">
+                    </a>
+                </div>
+                <span class="header-tag">AI Writer</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h1>เขียนบทความอัตโนมัติ</h1>
+            <p class="hint">ใส่หัวข้อ กดปุ่ม แล้วรอประมาณ 2-4 นาที ระบบจะเขียนบทความ เผยแพร่ และเพิ่มลิงก์ในหน้าแรกให้เอง</p>
+
+            <label for="topic">หัวข้อบทความ *</label>
+            <input type="text" id="topic" maxlength="200" placeholder="เช่น วิธีขายของบน TikTok Shop สำหรับมือใหม่" autocomplete="off">
+
+            <label for="requirements">ความต้องการเพิ่มเติม</label>
+            <textarea id="requirements" maxlength="2000" placeholder="เช่น เน้นกลุ่ม SME ใส่ตัวอย่างจริง 3 ตัวอย่าง น้ำเสียงเป็นกันเอง"></textarea>
+
+            <button class="btn" id="btnGenerate" type="button">สร้างบทความ</button>
+            <p class="small" id="formMsg"></p>
+        </section>
+
+        <section class="card" id="status" aria-live="polite">
+            <h2>สถานะการทำงาน</h2>
+            <div class="status-line"><span class="spinner" id="spinner"></span><span id="statusText">กำลังส่งคำสั่ง...</span></div>
+            <ol class="steps" id="steps"></ol>
+            <div id="resultBox"></div>
+        </section>
+
+        <section class="card">
+            <h2>ประวัติล่าสุด</h2>
+            <ul id="history"></ul>
+            <p class="empty" id="historyEmpty">ยังไม่มีประวัติในเครื่องนี้</p>
+        </section>
+
+        <section class="card">
+            <details id="settings">
+                <summary>ตั้งค่า GitHub</summary>
+                <p class="hint" style="margin-top:0.75rem">Token จะถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น และส่งไปที่ api.github.com เท่านั้น</p>
+
+                <label for="token">GitHub Token (Fine-grained)</label>
+                <input type="password" id="token" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+
+                <label for="repo">Repository</label>
+                <input type="text" id="repo" placeholder="owner/repo" autocomplete="off" spellcheck="false">
+
+                <label class="check"><input type="checkbox" id="remember" checked> จำไว้ในเครื่องนี้ (ถ้าไม่ติ๊ก จะลืมเมื่อปิดแท็บ)</label>
+
+                <div class="row">
+                    <button class="btn" id="btnSave" type="button">บันทึก &amp; ทดสอบ</button>
+                    <button class="btn btn-light" id="btnClear" type="button">ลบ Token</button>
+                </div>
+                <p class="small" id="settingsMsg"></p>
+            </details>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy;2025 RapidPress.INFO Limited. <a href="./">กลับหน้าแรก</a></p>
+        </div>
+    </footer>
+
+    <script>
+    (function () {
+        "use strict";
+
+        var DEFAULT_REPO = "brandingheroteam/master";
+        var WORKFLOW = "generate-article.yml";
+        var SITE = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+            ? location.origin : "https://rapidpress.info";
+        var KEY_TOKEN = "rp_writer_token", KEY_REPO = "rp_writer_repo", KEY_HIST = "rp_writer_history";
+        var STEP_NAMES = {
+            "Set up job": "เตรียมเครื่องทำงาน",
+            "Checkout": "ดึงไฟล์เว็บ",
+            "Set up Python": "เตรียม Python",
+            "Write article with Gemini": "Gemini กำลังเขียนบทความ",
+            "Commit and push": "บันทึกบทความขึ้นเว็บ",
+            "Summary": "สรุปผล"
+        };
+
+        var $ = function (id) { return document.getElementById(id); };
+        var polling = {};
+
+        // ---------- storage (กันกรณีเบราว์เซอร์บล็อก) ----------
+        function sget(store, k) { try { return window[store].getItem(k); } catch (e) { return null; } }
+        function sset(store, k, v) { try { window[store].setItem(k, v); } catch (e) {} }
+        function sdel(store, k) { try { window[store].removeItem(k); } catch (e) {} }
+
+        function getToken() { return sget("localStorage", KEY_TOKEN) || sget("sessionStorage", KEY_TOKEN) || ""; }
+        function getRepo() { return (sget("localStorage", KEY_REPO) || DEFAULT_REPO).trim(); }
+
+        function loadHistory() {
+            try { return JSON.parse(sget("localStorage", KEY_HIST) || "[]") || []; } catch (e) { return []; }
+        }
+        function saveHistory(list) { sset("localStorage", KEY_HIST, JSON.stringify(list.slice(0, 20))); }
+        function updateItem(req, patch) {
+            var list = loadHistory();
+            list.forEach(function (it) { if (it.req === req) { Object.keys(patch).forEach(function (k) { it[k] = patch[k]; }); } });
+            saveHistory(list);
+            renderHistory();
+        }
+
+        // ---------- GitHub API ----------
+        function gh(path, opts) {
+            opts = opts || {};
+            var token = getToken();
+            if (!token) return Promise.reject(new Error("ยังไม่ได้ใส่ GitHub Token (กด ‘ตั้งค่า GitHub’ ด้านล่าง)"));
+            return fetch("https://api.github.com/repos/" + getRepo() + path, {
+                method: opts.method || "GET",
+                headers: {
+                    "Accept": "application/vnd.github+json",
+                    "Authorization": "Bearer " + token,
+                    "X-GitHub-Api-Version": "2022-11-28"
+                },
+                body: opts.body ? JSON.stringify(opts.body) : undefined,
+                cache: "no-store"
+            }).then(function (res) {
+                if (res.status === 204) return null;
+                return res.json().catch(function () { return {}; }).then(function (data) {
+                    if (res.ok) return data;
+                    var msg = (data && data.message) || ("HTTP " + res.status);
+                    if (res.status === 401) msg = "Token ไม่ถูกต้องหรือหมดอายุ";
+                    else if (res.status === 403) msg = "Token ไม่มีสิทธิ์พอ (ต้องมี Actions: Read and write และ Contents: Read)";
+                    else if (res.status === 404) msg = "ไม่พบ Repository หรือ Workflow (ตรวจชื่อ repo และว่าอัปโหลดไฟล์ workflow แล้ว)";
+                    else if (res.status === 422) msg = "GitHub ไม่รับคำสั่ง: " + msg;
+                    throw new Error(msg);
+                });
+            });
+        }
+
+        function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+        // ---------- แสดงสถานะ ----------
+        function showStatus(text, busy) {
+            $("status").classList.add("show");
+            $("statusText").textContent = text;
+            $("spinner").style.display = busy ? "" : "none";
+        }
+        function showSteps(steps) {
+            var ol = $("steps");
+            ol.textContent = "";
+            (steps || []).forEach(function (s) {
+                if (!STEP_NAMES[s.name]) return;
+                var li = document.createElement("li");
+                li.textContent = STEP_NAMES[s.name] + (s.status === "completed" ? " ✓" : "");
+                li.className = s.status === "completed" ? "done" : (s.status === "in_progress" ? "now" : "");
+                ol.appendChild(li);
+            });
+        }
+        function showResult(nodes) {
+            var box = $("resultBox");
+            box.textContent = "";
+            nodes.forEach(function (n) { box.appendChild(n); });
+        }
+        function el(tag, attrs, text) {
+            var e = document.createElement(tag);
+            Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+            if (text) e.textContent = text;
+            return e;
+        }
+
+        // ---------- ติดตามงาน ----------
+        function findRun(req) {
+            return gh("/actions/workflows/" + WORKFLOW + "/runs?event=workflow_dispatch&per_page=20").then(function (d) {
+                var runs = (d && d.workflow_runs) || [];
+                for (var i = 0; i < runs.length; i++) {
+                    if ((runs[i].display_title || "").indexOf("[" + req + "]") !== -1) return runs[i];
+                }
+                return null;
+            });
+        }
+
+        function findArticle(req, branch) {
+            return gh("/commits?per_page=20" + (branch ? "&sha=" + encodeURIComponent(branch) : "")).then(function (list) {
+                for (var i = 0; i < (list || []).length; i++) {
+                    var msg = (list[i].commit && list[i].commit.message) || "";
+                    if (msg.indexOf("[req:" + req + "]") !== -1) {
+                        var m = msg.match(/\(([A-Za-z0-9_\-]+)\.html\)/);
+                        var t = msg.match(/^Add article: (.*) \([A-Za-z0-9_\-]+\.html\)/);
+                        if (m) return { slug: m[1], title: t ? t[1] : m[1] };
+                    }
+                }
+                return null;
+            });
+        }
+
+        function waitLive(url, req) {
+            // เช็กว่า GitHub Pages อัปเดตแล้วหรือยัง (ทำได้เมื่อเปิดหน้านี้บนโดเมนเว็บจริง)
+            if (location.origin !== SITE) return;
+            var tries = 0;
+            (function loop() {
+                fetch(url, { method: "HEAD", cache: "no-store" }).then(function (r) {
+                    if (r.ok) {
+                        if ($("liveNote") && polling.current === req) $("liveNote").textContent = "เผยแพร่แล้ว เปิดอ่านได้เลย";
+                        updateItem(req, { live: true });
+                    } else if (++tries < 30) setTimeout(loop, 10000);
+                }).catch(function () { if (++tries < 30) setTimeout(loop, 10000); });
+            })();
+        }
+
+        function track(req, show) {
+            if (polling[req]) return;
+            polling[req] = true;
+            if (show) polling.current = req;
+            var started = Date.now(), runId = null, branch = null;
+
+            function render(fn) { if (polling.current === req) fn(); }
+
+            (function loop() {
+                var p = runId ? gh("/actions/runs/" + runId) : findRun(req);
+                p.then(function (run) {
+                    if (!run) {
+                        if (Date.now() - started > 3 * 60 * 1000) throw new Error("ไม่พบงานที่สั่งไป ลองตรวจในแท็บ Actions ของ GitHub");
+                        render(function () { showStatus("รอ GitHub เริ่มงาน...", true); });
+                        return setTimeout(loop, 4000);
+                    }
+                    runId = run.id;
+                    branch = run.head_branch;
+                    updateItem(req, { runUrl: run.html_url });
+
+                    if (run.status !== "completed") {
+                        updateItem(req, { status: "running" });
+                        return gh("/actions/runs/" + run.id + "/jobs").then(function (j) {
+                            var steps = (j && j.jobs && j.jobs[0] && j.jobs[0].steps) || [];
+                            var now = steps.filter(function (s) { return s.status === "in_progress"; })[0];
+                            render(function () {
+                                showStatus(run.status === "queued" ? "อยู่ในคิว รอเครื่องว่าง..." :
+                                    (now && STEP_NAMES[now.name] ? STEP_NAMES[now.name] + "..." : "กำลังทำงาน..."), true);
+                                showSteps(steps);
+                            });
+                            setTimeout(loop, 5000);
+                        });
+                    }
+
+                    if (run.conclusion !== "success") {
+                        delete polling[req];
+                        updateItem(req, { status: "failed" });
+                        render(function () {
+                            showStatus("ไม่สำเร็จ (" + run.conclusion + ")", false);
+                            var a = el("a", { href: run.html_url, target: "_blank", rel: "noopener" }, "ดูรายละเอียดข้อผิดพลาดบน GitHub");
+                            var p = el("p", { "class": "small" });
+                            p.appendChild(a);
+                            showResult([p]);
+                        });
+                        return;
+                    }
+
+                    return findArticle(req, branch).then(function (art) {
+                        delete polling[req];
+                        if (!art) {
+                            updateItem(req, { status: "done" });
+                            render(function () {
+                                showStatus("เสร็จแล้ว แต่หาลิงก์บทความไม่เจอ", false);
+                                var a = el("a", { href: run.html_url, target: "_blank", rel: "noopener" }, "ดูผลบน GitHub");
+                                showResult([a]);
+                            });
+                            return;
+                        }
+                        var url = SITE + "/" + art.slug + ".html";
+                        updateItem(req, { status: "done", url: url, title: art.title });
+                        render(function () {
+                            showStatus("เขียนบทความเสร็จแล้ว", false);
+                            showSteps([]);
+                            var link = el("a", { "class": "result-link", href: url, target: "_blank", rel: "noopener" }, "เปิดบทความ: " + art.title);
+                            var note = el("p", { "class": "small", id: "liveNote" }, "หน้าเว็บอาจใช้เวลา 1-2 นาทีให้ GitHub Pages อัปเดต ถ้าเปิดแล้วเจอ 404 ให้รอสักครู่แล้วรีเฟรช");
+                            showResult([link, note]);
+                        });
+                        waitLive(url, req);
+                    });
+                }).catch(function (err) {
+                    delete polling[req];
+                    render(function () {
+                        showStatus("เกิดข้อผิดพลาด", false);
+                        showResult([el("p", { "class": "msg-err" }, err.message)]);
+                    });
+                    if (Date.now() - started > 3 * 60 * 1000) updateItem(req, { status: "failed" });
+                });
+            })();
+        }
+
+        // ---------- สั่งสร้างบทความ ----------
+        function generate() {
+            var topic = $("topic").value.trim();
+            var reqs = $("requirements").value.trim();
+            $("formMsg").textContent = "";
+            if (!topic) { $("formMsg").textContent = "กรุณาใส่หัวข้อบทความ"; $("topic").focus(); return; }
+            if (!getToken()) {
+                $("settings").open = true;
+                $("settingsMsg").textContent = "กรุณาใส่ GitHub Token ก่อน";
+                $("token").focus();
+                return;
+            }
+            var req = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            var btn = $("btnGenerate");
+            btn.disabled = true;
+            showResult([]);
+            showSteps([]);
+            showStatus("กำลังส่งคำสั่ง...", true);
+
+            gh("").then(function (repo) {
+                return gh("/actions/workflows/" + WORKFLOW + "/dispatches", {
+                    method: "POST",
+                    body: { ref: repo.default_branch, inputs: { topic: topic, requirements: reqs, request_id: req } }
+                });
+            }).then(function () {
+                var list = loadHistory();
+                list.unshift({ req: req, topic: topic, created: Date.now(), status: "queued" });
+                saveHistory(list);
+                renderHistory();
+                $("topic").value = "";
+                $("requirements").value = "";
+                showStatus("ส่งคำสั่งแล้ว รอ GitHub เริ่มงาน...", true);
+                return sleep(3000).then(function () { track(req, true); });
+            }).catch(function (err) {
+                showStatus("ส่งคำสั่งไม่สำเร็จ", false);
+                showResult([el("p", { "class": "msg-err" }, err.message)]);
+            }).then(function () { btn.disabled = false; });
+        }
+
+        // ---------- ประวัติ ----------
+        var STATUS_TEXT = { queued: ["รอคิว", "run"], running: ["กำลังเขียน", "run"], done: ["เสร็จแล้ว", "ok"], failed: ["ไม่สำเร็จ", "err"] };
+
+        function renderHistory() {
+            var list = loadHistory(), ul = $("history");
+            ul.textContent = "";
+            $("historyEmpty").style.display = list.length ? "none" : "";
+            list.forEach(function (it) {
+                var li = el("li");
+                var top = el("div", { "class": "h-top" });
+                top.appendChild(el("span", { "class": "h-title" }, it.title || it.topic));
+                var st = STATUS_TEXT[it.status] || [it.status, ""];
+                top.appendChild(el("span", { "class": "badge " + st[1] }, st[0]));
+                li.appendChild(top);
+                var meta = el("div", { "class": "small" });
+                meta.appendChild(document.createTextNode(new Date(it.created).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })));
+                if (it.url) {
+                    meta.appendChild(document.createTextNode(" · "));
+                    meta.appendChild(el("a", { href: it.url, target: "_blank", rel: "noopener" }, "อ่านบทความ"));
+                }
+                if (it.runUrl) {
+                    meta.appendChild(document.createTextNode(" · "));
+                    meta.appendChild(el("a", { href: it.runUrl, target: "_blank", rel: "noopener" }, "ดูบน GitHub"));
+                }
+                li.appendChild(meta);
+                ul.appendChild(li);
+            });
+        }
+
+        // ---------- ตั้งค่า ----------
+        function saveSettings() {
+            var token = $("token").value.trim();
+            var repo = $("repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
+            var msg = $("settingsMsg");
+            if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { msg.textContent = "รูปแบบ Repository ต้องเป็น owner/repo"; return; }
+            sset("localStorage", KEY_REPO, repo);
+            $("repo").value = repo;
+            if (token) {
+                sdel("localStorage", KEY_TOKEN);
+                sdel("sessionStorage", KEY_TOKEN);
+                sset($("remember").checked ? "localStorage" : "sessionStorage", KEY_TOKEN, token);
+            }
+            msg.textContent = "กำลังทดสอบ...";
+            gh("").then(function (r) {
+                return gh("/actions/workflows/" + WORKFLOW).then(function () {
+                    msg.textContent = "เชื่อมต่อสำเร็จ: " + r.full_name + " (branch " + r.default_branch + ")";
+                });
+            }).catch(function (err) { msg.textContent = "ใช้ไม่ได้: " + err.message; });
+        }
+
+        function clearToken() {
+            sdel("localStorage", KEY_TOKEN);
+            sdel("sessionStorage", KEY_TOKEN);
+            $("token").value = "";
+            $("settingsMsg").textContent = "ลบ Token ออกจากเครื่องนี้แล้ว";
+        }
+
+        // ---------- เริ่มต้น ----------
+        $("repo").value = getRepo();
+        $("token").value = getToken();
+        $("remember").checked = !sget("sessionStorage", KEY_TOKEN);
+        if (!getToken()) $("settings").open = true;
+        $("btnGenerate").addEventListener("click", generate);
+        $("btnSave").addEventListener("click", saveSettings);
+        $("btnClear").addEventListener("click", clearToken);
+        renderHistory();
+
+        // ตามงานที่ค้างอยู่ (สั่งไว้ไม่เกิน 1 ชั่วโมง)
+        if (getToken()) {
+            var first = true;
+            loadHistory().forEach(function (it) {
+                if ((it.status === "queued" || it.status === "running") && Date.now() - it.created < 3600000) {
+                    track(it.req, first);
+                    if (first) showStatus("กำลังตามงาน: " + it.topic, true);
+                    first = false;
+                }
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
