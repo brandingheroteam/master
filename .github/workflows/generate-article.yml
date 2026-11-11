@@ -1,1 +1,83 @@
 
+name: Generate Article
+
+# ชื่อรอบการทำงาน มี request_id ไว้ให้ writer.html ตามหาสถานะได้
+run-name: "Article: ${{ inputs.topic }} [${{ inputs.request_id || 'manual' }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "หัวข้อบทความ"
+        required: true
+        type: string
+      requirements:
+        description: "ความต้องการเพิ่มเติม (ไม่บังคับ)"
+        required: false
+        type: string
+        default: ""
+      request_id:
+        description: "รหัสคำขอ (writer.html ใส่ให้อัตโนมัติ)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+# ทำทีละงาน กันการ push ชนกัน
+concurrency:
+  group: generate-article
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Write article with Gemini
+        id: gen
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          ARTICLE_TOPIC: ${{ inputs.topic }}
+          ARTICLE_REQUIREMENTS: ${{ inputs.requirements }}
+        run: python scripts/generate_article.py
+
+      - name: Commit and push
+        env:
+          SLUG: ${{ steps.gen.outputs.slug }}
+          TITLE: ${{ steps.gen.outputs.title }}
+          REQUEST_ID: ${{ inputs.request_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${SLUG}.html" index.html
+          git commit -m "Add article: ${TITLE} (${SLUG}.html) [req:${REQUEST_ID:-manual}]"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 5
+          done
+          exit 1
+
+      - name: Summary
+        env:
+          URL: ${{ steps.gen.outputs.url }}
+          TITLE: ${{ steps.gen.outputs.title }}
+          MODEL: ${{ steps.gen.outputs.model }}
+        run: |
+          {
+            echo "### บทความใหม่: ${TITLE}"
+            echo ""
+            echo "- ลิงก์: ${URL}"
+            echo "- รุ่น Gemini: ${MODEL}"
+            echo "- เว็บจะอัปเดตภายใน 1-2 นาที (GitHub Pages)"
+          } >> "$GITHUB_STEP_SUMMARY"
